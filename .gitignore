@@ -4,3 +4,6 @@ __pycache__/
 /media/
 .vscode/
 *.DS_Store
+# Ignore local database
+db.sqlite3
+prescriptrack/db.sqlite3
