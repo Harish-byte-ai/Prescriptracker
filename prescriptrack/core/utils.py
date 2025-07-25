@@ -1,6 +1,8 @@
 # core/utils.py
 from PIL import Image
+from django.http import HttpResponse
 from pyzbar.pyzbar import decode
+from core.email_utils import send_alert_email
 
 from .models import AccessLog
 
@@ -36,3 +38,16 @@ def check_for_fraud(prescription):
         return "⏰ Expired Prescription"
 
     return "✅ All Clear"
+
+
+def verify_qr_and_flag(rx_id):
+    # Your logic to scan QR and detect fraud
+    is_fraudulent = check_fraud(rx_id)  # pyright: ignore[reportUndefinedVariable] # Replace with your logic
+    if is_fraudulent:
+        send_alert_email(rx_id)
+
+
+def verify_prescription(request):
+    rx_id = request.POST.get("rx_id")
+    verify_qr_and_flag(rx_id)
+    return HttpResponse("Verification complete.")

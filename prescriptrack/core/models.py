@@ -7,6 +7,7 @@ class Doctor(models.Model):
 
 class Patient(models.Model):
     name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=15)
     patient_id = models.CharField(max_length=50, unique=True)
     age = models.IntegerField()
     gender = models.CharField(max_length=10)

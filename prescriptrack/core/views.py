@@ -103,3 +103,7 @@ from django.shortcuts import render
 def success_page(request):
     latest = Prescription.objects.latest('id')
     return render(request, 'success.html', {'prescription': latest})
+
+def some_view(request):
+    from core.views import send_alert_email
+    send_alert_email("RX-12345")
