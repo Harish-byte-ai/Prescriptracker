@@ -147,12 +147,16 @@
 
         <div class="mb-3">
           <label class="form-label">Doctor</label>
-          <select name="doctor_id" class="form-select" required>
-            <option value="">Select Doctor</option>
-            {% for doctor in doctors %}
-              <option value="{{ doctor.id }}">{{ doctor.name }}</option>
-            {% endfor %}
-          </select>
+      <select name="doctor_id" class="form-select" required>
+  <option value="">Select Doctor</option>
+  {% for group_name, doctors in group_doctors.items %}
+    <optgroup label="{{ group_name }}">
+      {% for doctor in doctors %}
+        <option value="{{ doctor.id }}">{{ doctor.name }} (ID: {{ doctor.id }})</option>
+      {% endfor %}
+    </optgroup>
+  {% endfor %}
+</select>
         </div>
 
         <div class="mb-3">

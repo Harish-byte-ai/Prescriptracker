@@ -1,8 +1,10 @@
 # core/models.py
+from django.contrib.auth.models import Group
 from django.db import models
 
 class Doctor(models.Model):
     name = models.CharField(max_length=100)
+    groups = models.ManyToManyField(Group, related_name="doctor_members")
     doctor_id = models.CharField(max_length=50, unique=True)
 
 class Patient(models.Model):

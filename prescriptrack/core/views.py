@@ -18,6 +18,14 @@ from django.utils import timezone
 from django.shortcuts import render, redirect
 from .models import Doctor, Patient, Prescription
 
+from django.contrib.auth.models import Group
+from django.utils import timezone
+import hashlib, time, qrcode
+from io import BytesIO
+from django.core.files.base import ContentFile
+from django.shortcuts import render, redirect
+from .models import Doctor, Patient, Prescription  # Adjust as needed
+
 def generate_prescription(request):
     if request.method == 'POST':
         doctor_id = request.POST.get('doctor_id')
@@ -25,28 +33,30 @@ def generate_prescription(request):
         medicine = request.POST.get('medicine_details')
         timestamp = timezone.now().isoformat()
 
-        # 🔎 Get selected doctor and patient objects
         try:
             doctor = Doctor.objects.get(id=doctor_id)
             patient = Patient.objects.get(id=patient_id)
         except (Doctor.DoesNotExist, Patient.DoesNotExist):
+            # 👉 Show grouped doctors even on error
+            groups = Group.objects.all()
+            group_doctors = {
+                group.name: group.doctor_members.all()  # ✅ Correct related_name
+                for group in groups
+            }
             return render(request, 'index.html', {
-                'doctors': Doctor.objects.all(),
+                'group_doctors': group_doctors,
                 'patients': Patient.objects.all(),
                 'error': "Invalid doctor or patient selection."
             })
 
-        # 🔐 Create prescription hash
         raw_data = f"{doctor_id}{patient_id}{medicine}{timestamp}"
         hash_value = hashlib.sha256(raw_data.encode()).hexdigest()
 
-        # 🧾 Generate QR code
         qr = qrcode.make(hash_value)
         stream = BytesIO()
         qr.save(stream, format='PNG')
         qr_image = ContentFile(stream.getvalue(), f'RX-{patient_id}-{int(time.time())}.png')
 
-        # 🗃️ Save prescription
         Prescription.objects.create(
             prescription_id=f"RX-{patient_id}-{int(time.time())}",
             patient=patient,
@@ -56,16 +66,19 @@ def generate_prescription(request):
             qr_code_image=qr_image
         )
 
-        return redirect('success_page')  # Make sure this view exists and handles QR display
+        return redirect('success_page')
 
-    # GET request → render form with dropdowns
-    doctors = Doctor.objects.all()
-    patients = Patient.objects.all()
-    return render(request, 'index.html', {
-        'doctors': doctors,
-        'patients': patients
-    })
-
+    else:
+        # 🏥 GET request → show doctors grouped by group name
+        groups = Group.objects.all()
+        group_doctors = {
+            group.name: group.doctor_members.all()
+            for group in groups
+        }
+        return render(request, 'index.html', {
+            'group_doctors': group_doctors,
+            'patients': Patient.objects.all()
+        })
 
 
 def verify_prescription(request):
