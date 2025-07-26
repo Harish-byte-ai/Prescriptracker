@@ -6,7 +6,7 @@ def send_alert(subject, message):
         subject,
         message,
         'wddevil888@gmail.com',  # Sender
-        ['harishh.1012.2005@gmail.com'],      # Receiver(s)
+        ['harishh1012.2005@gmail.com'],      # Receiver(s)
         fail_silently=False
     )
  
